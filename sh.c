@@ -159,6 +159,37 @@ main(void)
 
   // Read and run input commands.
   while(getcmd(buf, sizeof(buf)) >= 0){
+    if(buf[0] == '!' && buf[1] == ' '){
+        if (sizeof(buf) > 512) {
+          fprintf(2, "Message too long\n");
+          continue;
+        }
+        char* p = buf + 2; 
+        char* end = buf + strlen(buf);
+        
+        while(p < end) {
+          char* word = p;
+          while(p < end && *p != ' ') p++;
+          
+          char saved_char = *p;
+          *p = '\0';
+         
+          if(strcmp(word, "os") == 0) {
+            fprintf(2, "\033[34m"); 
+            fprintf(2, word);
+            fprintf(2, "\033[0m");   
+          } else {
+            fprintf(2, word);
+          }
+          
+          *p = saved_char;
+          if(p < end) {
+            fprintf(2, " ");
+            p++;
+          }
+        }
+        continue;
+      }
     if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
       // Chdir must be called by the parent, not the child.
       buf[strlen(buf)-1] = 0;  // chop \n
