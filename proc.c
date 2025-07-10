@@ -469,18 +469,20 @@ scheduler(void)
         // Switch to chosen process.  It is the process's job
         // to release its lock and then reacquire it
         // before jumping back to us.
-        p->state = RUNNING;
-        c->proc = p;
-        swtch(&c->context, &p->context);
-
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
-        c->proc = 0;
-        found = 1;
+        if (thread_schd(p)) {
+            p->state = RUNNING;
+            c->proc = p;
+            swtch(&c->context, &p->context);
+    
+            // Process is done running for now.
+            // It should have changed its p->state before coming back.
+            c->proc = 0;
+            found = 1;
+        }
       }
       release(&p->lock);
     }
-    if(found == 0) {
+        if(found == 0) {
       // nothing to run; stop running on this core until an interrupt.
       intr_on();
       asm volatile("wfi");
@@ -805,7 +807,6 @@ void sleepthread(int n, uint ticks0)
   thread_schd(myproc());
 }
 
-// proc.c
 struct thread *
 initthread(struct proc *p)
 {
@@ -830,7 +831,7 @@ initthread(struct proc *p)
   return p->current_thread;
 }
 
-// proc.c
+
 int thread_schd(struct proc *p)
 {
   if (!p->current_thread)

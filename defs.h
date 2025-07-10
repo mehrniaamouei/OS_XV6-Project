@@ -194,6 +194,8 @@ struct thread* allocthread(uint64 start_thread, uint64 stack_address,
 uint64 arg); 
 int jointhread(uint id); 
 void sleepthread(int n, uint ticks0);
+struct thread *initthread(struct proc *p);
+int thread_schd(struct proc *p);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
