@@ -74,37 +74,47 @@ runcmd(struct cmd *cmd)
 
   case EXEC:
     ecmd = (struct execcmd*)cmd;
-    if(ecmd->argv[0] == 0) {
+    if (ecmd->argv[0] == 0)
+    {
       exit(1);
     }
-    
-    if (ecmd->argv[0] && strcmp(ecmd->argv[0], "!") == 0) {
+
+    if (ecmd->argv[0] && strcmp(ecmd->argv[0], "!") == 0)
+    {
       int total_length = 0;
-      for (int i = 1; ecmd->argv[i] != 0; i++) {
-          total_length += strlen(ecmd->argv[i]);
-          if (i > 1) total_length++;  // Account for spaces
+      for (int i = 1; ecmd->argv[i] != 0; i++)
+      {
+        total_length += strlen(ecmd->argv[i]);
+        if (i > 1)
+          total_length++; // Account for spaces
       }
 
-      if (total_length > 512) {
-          fprintf(2, "Message too long\n");
-          exit(0);
+      if (total_length > 512)
+      {
+        fprintf(2, "Message too long\n");
+        exit(0);
       }
-      
-      for (int i = 1; ecmd->argv[i] != 0; i++) {  
-          if(strcmp(ecmd->argv[i], "os") == 0) {
-              fprintf(2, "\033[34m%s\033[0m", ecmd->argv[i]);  
-          } else {
-              fprintf(2, "%s", ecmd->argv[i]);  
-            }
-        
-          if (ecmd->argv[i+1] != 0) {
-              fprintf(2, " ");
-          }
+
+      for (int i = 1; ecmd->argv[i] != 0; i++)
+      {
+        if (strcmp(ecmd->argv[i], "os") == 0)
+        {
+          fprintf(2, "\033[34m%s\033[0m", ecmd->argv[i]);
+        }
+        else
+        {
+          fprintf(2, "%s", ecmd->argv[i]);
+        }
+
+        if (ecmd->argv[i + 1] != 0)
+        {
+          fprintf(2, " ");
+        }
       }
-      fprintf(2, "\n");  
+      fprintf(2, "\n");
       exit(0);
     }
-    
+
     exec(ecmd->argv[0], ecmd->argv);
     fprintf(2, "exec %s failed\n", ecmd->argv[0]);
     break;
@@ -160,65 +170,73 @@ runcmd(struct cmd *cmd)
   exit(0);
 }
 
-
-int
-getcmd(char *buf, int nbuf)
+int getcmd(char *buf, int nbuf)
 {
   write(2, "$arian-mehrnia ", 15);
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
-  if(buf[0] == 0) // EOF
+  if (buf[0] == 0) // EOF
     return -1;
   return 0;
 }
 
-int
-main(void)
+int main(void)
 {
   static char buf[100];
   int fd;
 
   // Ensure that three file descriptors are open.
-  while((fd = open("console", O_RDWR)) >= 0){
-    if(fd >= 3){
+  while ((fd = open("console", O_RDWR)) >= 0)
+  {
+    if (fd >= 3)
+    {
       close(fd);
       break;
     }
   }
 
   // Read and run input commands.
-  while(getcmd(buf, sizeof(buf)) >= 0){
-    if(buf[0] == '!' && buf[1] == ' '){
-        if (sizeof(buf) > 512) {
-          fprintf(2, "Message too long\n");
-          continue;
-        }
-        char* p = buf + 2; 
-        char* end = buf + strlen(buf);
-        
-        while(p < end) {
-          char* word = p;
-          while(p < end && *p != ' ') p++;
-          
-          char saved_char = *p;
-          *p = '\0';
-         
-          if(strcmp(word, "os") == 0) {
-            fprintf(2, "\033[34m"); 
-            fprintf(2, word);
-            fprintf(2, "\033[0m");   
-          } else {
-            fprintf(2, word);
-          }
-          
-          *p = saved_char;
-          if(p < end) {
-            fprintf(2, " ");
-            p++;
-          }
-        }
+  while (getcmd(buf, sizeof(buf)) >= 0)
+  {
+    if (buf[0] == '!' && buf[1] == ' ')
+    {
+      if (sizeof(buf) > 512)
+      {
+        fprintf(2, "Message too long\n");
         continue;
       }
+      char *p = buf + 2;
+      char *end = buf + strlen(buf);
+
+      while (p < end)
+      {
+        char *word = p;
+        while (p < end && *p != ' ')
+          p++;
+
+        char saved_char = *p;
+        *p = '\0';
+
+        if (strcmp(word, "os") == 0)
+        {
+          fprintf(2, "\033[34m");
+          fprintf(2, word);
+          fprintf(2, "\033[0m");
+        }
+        else
+        {
+          fprintf(2, word);
+        }
+
+        *p = saved_char;
+        if (p < end)
+        {
+          fprintf(2, " ");
+          p++;
+        }
+      }
+      continue;
+    }
     if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
       // Chdir must be called by the parent, not the child.
       buf[strlen(buf)-1] = 0;  // chop \n
