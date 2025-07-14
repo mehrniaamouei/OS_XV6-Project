@@ -78,6 +78,23 @@ struct trapframe {
   /* 272 */ uint64 t5;
   /* 280 */ uint64 t6;
 };
+enum threadstate {
+  THREAD_UNUSED,
+  THREAD_RUNNABLE,
+  THREAD_RUNNING,
+  THREAD_JOINED,
+  THREAD_SLEEPING,
+};
+
+struct thread{
+  enum threadstate state;
+  struct trapframe *trapframe;
+  uint id;
+  uint join;
+  int sleep_n;
+  uint sleep_tick0;
+
+};
 
 enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
@@ -109,19 +126,5 @@ struct proc {
   struct thread *current_thread;
 
 };
-struct thread{
-  enum threadstate state;
-  struct trapframe *trapframe;
-  uint id;
-  uint join;
-  int sleep_n;
-  uint sleep_tick0;
 
-};
-enum threadstate {
-  THREAD_UNUSED,
-  THREAD_RUNNABLE,
-  THREAD_RUNNING,
-  THREAD_JOINED,
-  THREAD_SLEEPING,
-};
+
